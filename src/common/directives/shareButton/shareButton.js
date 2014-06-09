@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('directives').directive('shareButton', function ($location, $analytics, $window, $filter) {
+angular.module('directives').directive('shareButton', function ($location, $analytics, $window, $filter, $rootScope) {
   return {
     restrict: "EA",
     templateUrl: "common/directives/shareButton/templates/shareButton.html",
@@ -12,19 +12,22 @@ angular.module('directives').directive('shareButton', function ($location, $anal
       scope.$watch('item', function (item, oldValue) {
         if(item) {
           var tweet_text, unprocessed_tweet_text, parent;
+          var baseURL = $window.location.protocol + '//' + $window.location.host + '/';
+          console.log(item);
           if ('fundraiser' in item) {
             parent = item.fundraiser;
             unprocessed_tweet_text = "I just pledged "+$filter('dollars')(item.amount)+" to "+parent.title+"!";
+            var unprocessed_tweet_url = baseURL + 'teams/' + '/fundraiser/' + parent.slug; 
           } else if ('issue' in item) {
             parent = item.issue;
             unprocessed_tweet_text = "I just posted a "+$filter('dollars')(item.amount)+" bounty on Bountysource!";
+            var unprocessed_tweet_url = baseURL + buildFrontendPath(parent);
           } else {
             parent = item.team;
             unprocessed_tweet_text = "I just pledged "+$filter('dollars')(item.amount)+" to "+parent.name+"!";
+            var unprocessed_tweet_url = baseURL + buildFrontendPath(parent);
           }
           scope.tweet_text = encodeURIComponent(unprocessed_tweet_text);
-
-          var unprocessed_tweet_url = "https://www.bountysource.com"+buildFrontendPath(parent);
           scope.tweet_url = encodeURIComponent(unprocessed_tweet_url);
         }
       });
@@ -48,6 +51,10 @@ angular.module('directives').directive('shareButton', function ($location, $anal
 
       function createShareUrls (item, parent, item_type) {
         //set the tweet text based upon the item type
+        
+        // console.log(buildFrontendPath(parent));
+        // debugger
+        
         var unprocessed_google_url = "https://www.bountysource.com"+buildFrontendPath(parent);
         var google_url = "https://plus.google.com/share?url="+ encodeURIComponent(unprocessed_google_url);
 
